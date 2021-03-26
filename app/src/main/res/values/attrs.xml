@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="Visualizer">
+        <attr name="bar_color" format="reference|color" />
+    </declare-styleable>
+</resources>

@@ -1,0 +1,5 @@
+<paths>
+    <cache-path
+        name="log_files"
+        path="/" />
+</paths>

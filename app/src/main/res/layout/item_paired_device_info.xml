@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="device"
+            type="android.bluetooth.BluetoothDevice" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/margin_low"
+        android:paddingBottom="@dimen/margin_low"
+        android:paddingStart="@dimen/margin_xl"
+        android:paddingEnd="@dimen/margin_high"
+        android:background="?attr/selectableItemBackground"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/text_typical"
+            android:text="@{device.name}"
+            tools:text="HC-05" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_low"
+            android:text="@{device.address}"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_sm"
+            tools:text="HC-05" />
+    </LinearLayout>
+</layout>

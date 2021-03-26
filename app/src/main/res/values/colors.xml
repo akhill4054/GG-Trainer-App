@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#ff7043</color>
+    <color name="colorPrimaryDark">#EA3E08</color>
+
+    <color name="text">#0C0C0C</color>
+    <color name="text_secondary">#292929</color>
+
+    <color name="white">#fafafa</color>
+    <color name="purple">#ce93d8</color>
+    <color name="orange">#ff7043</color>
+    <color name="deepOrange">#ff7043</color>
+    <color name="lightGreen">#99DD4A</color>
+</resources>

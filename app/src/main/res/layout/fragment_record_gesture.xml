@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:context=".ui.main.fragments.sync.SyncFragment">
+
+            <TextView
+                android:id="@+id/timerMM"
+                style="@style/text_active"
+                android:layout_marginTop="32dp"
+                android:layout_marginEnd="8dp"
+                android:text="@string/timer_init_value"
+                android:textSize="32sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/textView"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/textView"
+                style="@style/text_active"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=":"
+                android:textSize="32sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/timerMM"
+                app:layout_constraintEnd_toStartOf="@+id/timerSS"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/timerMM"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/timerSS"
+                style="@style/text_active"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/timer_init_value"
+                android:textSize="32sp"
+                app:layout_constraintBaseline_toBaselineOf="@+id/textView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/textView" />
+
+            <com.example.trainyourglove.ui.main.widgets.Visualizer
+                android:id="@+id/graph"
+                android:layout_width="0dp"
+                android:layout_height="150dp"
+                android:layout_marginTop="24dp"
+                app:bar_color="@color/purple"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/timerMM" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/startPause"
+                style="@style/btn_typical"
+                android:layout_marginTop="24dp"
+                android:text="@string/start"
+                app:backgroundTint="?attr/colorAccent"
+                app:cornerRadius="@dimen/corner_radius_typical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/graph" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/save"
+                style="@style/btn_typical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="@string/save"
+                android:visibility="gone"
+                app:backgroundTint="?attr/colorAccent"
+                app:cornerRadius="@dimen/corner_radius_typical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/cancel"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="@+id/mappingEditTextLayout"
+                tools:visibility="visible" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/stop"
+                style="@style/btn_typical_outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/stop"
+                app:cornerRadius="@dimen/corner_radius_typical"
+                app:layout_constraintEnd_toEndOf="@+id/startPause"
+                app:layout_constraintStart_toStartOf="@+id/startPause"
+                app:layout_constraintTop_toBottomOf="@+id/startPause" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cancel"
+                style="@style/btn_typical_outlined"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="@string/cancel"
+                android:visibility="gone"
+                app:cornerRadius="@dimen/corner_radius_typical"
+                app:layout_constraintBaseline_toBaselineOf="@+id/save"
+                app:layout_constraintEnd_toEndOf="@+id/mappingEditTextLayout"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@+id/save"
+                tools:visibility="visible" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/mappingEditTextLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/margin_md"
+                android:layout_marginTop="24dp"
+                android:hint="@string/gesture_mapping_hint"
+                android:visibility="gone"
+                app:boxCornerRadiusBottomEnd="@dimen/corner_radius_typical"
+                app:boxCornerRadiusBottomStart="@dimen/corner_radius_typical"
+                app:boxCornerRadiusTopEnd="@dimen/corner_radius_typical"
+                app:endIconDrawable="@drawable/ic_baseline_clear_24"
+                app:endIconMode="custom"
+                app:endIconTint="?attr/colorOnSurface"
+                app:layout_constraintBottom_toTopOf="@+id/save"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintVertical_bias="1.0"
+                tools:visibility="visible">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/mappingEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:maxLines="3"
+                    android:minLines="2" />
+            </com.google.android.material.textfield.TextInputLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</layout>
