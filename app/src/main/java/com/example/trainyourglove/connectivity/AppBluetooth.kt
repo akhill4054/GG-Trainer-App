@@ -22,6 +22,7 @@ import com.example.trainyourglove.utils.showShortToast
 import com.example.trainyourglove.utils.vibrateDevice
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import java.io.IOException
 import java.util.*
 
@@ -29,22 +30,23 @@ private const val TAG = "AppBluetooth"
 
 class AppBluetooth private constructor() {
 
-    private val _connectionState by lazy {
-        MutableLiveData<ConnectionState>()
-    }
+    private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
 
-    val connectionState: LiveData<ConnectionState> by lazy { _connectionState }
+    val connectionState = _connectionState.asStateFlow()
 
     val isConnected: Boolean
         get() {
-            return connectionState.value == ConnectionState.Connected
+            return connectionState.value is ConnectionState.Connected
         }
 
-    private val mConnectionMode: ConnectionMode = ConnectionMode.RECORD // DEBUG
+    val isDisconnected: Boolean
+        get() {
+            return !isConnected
+        }
 
-    private val _onReadData by lazy { MutableLiveData<String>() }
+    private val _readData = MutableSharedFlow<String>()
 
-    val onReadData: LiveData<String> by lazy { _onReadData }
+    val readData: SharedFlow<String> = _readData
 
     private val _onVisualizerData by lazy { MutableLiveData<FloatArray>() }
 
@@ -69,7 +71,7 @@ class AppBluetooth private constructor() {
         if (bluetoothAdapter == null) {
             // Device doesn't support Bluetooth
             activity.showShortToast("Device doesn't support Bluetooth")
-            _connectionState.postValue(ConnectionState.Error)
+            _connectionState.value = ConnectionState.Error()
             return this
         }
 
@@ -147,13 +149,14 @@ class AppBluetooth private constructor() {
         val address = PreferenceManager.getInstance(context).getLastConnectionAddress()
         if (address.isNotEmpty()) {
             val device = bluetoothAdapter!!.getRemoteDevice(address)
-            initConnectionAsClient(context, device)
+            initConnectionAsClient(context, device, true)
         }
     }
 
     private fun initConnectionAsClient(
         context: Context,
-        device: BluetoothDevice
+        device: BluetoothDevice,
+        suppressToasts: Boolean = false
     ) {
         // Change state
         _connectionState.value = ConnectionState.Connecting
@@ -170,7 +173,7 @@ class AppBluetooth private constructor() {
                 mmSocket!!.connect()
 
                 withContext(Dispatchers.Main) {
-                    _connectionState.postValue(ConnectionState.Connected)
+                    _connectionState.value = ConnectionState.Connected
 
                     // For indication purpose
                     context.vibrateDevice(100)
@@ -186,7 +189,7 @@ class AppBluetooth private constructor() {
             } catch (e: IOException) {
                 Log.e(TAG, "initConnectionAsClient: ", e)
 
-                _connectionState.postValue(ConnectionState.Error)
+                _connectionState.value = ConnectionState.Error(suppressToasts)
             }
         }
     }
@@ -270,24 +273,11 @@ class AppBluetooth private constructor() {
 
                     // Send the obtained bytes to the UI
                     if (readMessage.isNotEmpty()) {
-                        when {
-                            (readMessage.startsWith("$")) -> {
-                                // Switch mode
-                            }
-                            (mConnectionMode == ConnectionMode.RECORD) -> {
-                                _onReadData.postValue(readMessage)
-                                Log.d(TAG, readMessage)
-                                _onVisualizerData.postValue(
-                                    formatReadValuesForVisualizer(readMessage)
-                                )
-                            }
-                            else -> {
-                                /**
-                                 * [ConnectionMode.TRANSLATE]
-                                 * */
-                                _onTranslationData.postValue(readMessage)
-                            }
-                        }
+                        _readData.emit(readMessage)
+                        Log.d(TAG, readMessage)
+                        _onVisualizerData.postValue(
+                            formatReadValuesForVisualizer(readMessage)
+                        )
                     }
                 }
             }
@@ -345,7 +335,9 @@ class AppBluetooth private constructor() {
             }
 
             // Update state
-            _connectionState.postValue(ConnectionState.Disconnected)
+            _connectionState.value = ConnectionState.Disconnected
+            // To prevent toast on cofig. change/view-controller recreation
+            _connectionState.value = ConnectionState.Ideal
         }
     }
 
@@ -353,20 +345,21 @@ class AppBluetooth private constructor() {
         mmSocket = null
         mConnection?.close()
 
-        _connectionState.postValue(ConnectionState.Disconnected)
+        _connectionState.value = ConnectionState.Disconnected
+        // To prevent toast on cofig. change/view-controller recreation
+        _connectionState.value = ConnectionState.Ideal
     }
 
-    enum class ConnectionMode {
-        RECORD,
-        TRANSLATE
-    }
+    sealed class ConnectionState {
+        object Ideal : ConnectionState()
 
-    enum class ConnectionState {
-        Ideal,
-        Connected,
-        Connecting,
-        Error,
-        Disconnected
+        object Connected : ConnectionState()
+
+        object Connecting : ConnectionState()
+
+        class Error(val suppressToast: Boolean = false) : ConnectionState()
+
+        object Disconnected : ConnectionState()
     }
 
     companion object {

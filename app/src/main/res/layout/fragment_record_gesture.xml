@@ -5,9 +5,15 @@
 
     <data>
 
+        <variable
+            name="recordingState"
+            type="com.example.trainyourglove.ui.main.fragments.record.RecordingViewModel.RecordingState" />
+
+        <import type="com.example.trainyourglove.ui.main.fragments.record.RecordingViewModel.RecordingState" />
     </data>
 
     <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true">
@@ -18,81 +24,59 @@
             tools:context=".ui.main.fragments.sync.SyncFragment">
 
             <TextView
-                android:id="@+id/timerMM"
+                android:id="@+id/elapsedTime"
                 style="@style/text_active"
                 android:layout_marginTop="32dp"
                 android:layout_marginEnd="8dp"
-                android:text="@string/timer_init_value"
+                android:alpha="@{recordingState instanceof RecordingState.Recording ? 1.0F : 0.6F}"
                 android:textSize="32sp"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/textView"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintHorizontal_chainStyle="packed"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/textView"
-                style="@style/text_active"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=":"
-                android:textSize="32sp"
-                app:layout_constraintBaseline_toBaselineOf="@+id/timerMM"
-                app:layout_constraintEnd_toStartOf="@+id/timerSS"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/timerMM"
-                tools:ignore="HardcodedText" />
-
-            <TextView
-                android:id="@+id/timerSS"
-                style="@style/text_active"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="@string/timer_init_value"
-                android:textSize="32sp"
-                app:layout_constraintBaseline_toBaselineOf="@+id/textView"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintStart_toEndOf="@+id/textView" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="00 : 00" />
 
             <com.example.trainyourglove.ui.main.widgets.Visualizer
                 android:id="@+id/graph"
                 android:layout_width="0dp"
                 android:layout_height="150dp"
+                android:layout_marginStart="6dp"
                 android:layout_marginTop="24dp"
+                android:layout_marginEnd="8dp"
+                android:alpha="@{recordingState instanceof RecordingState.Recording ? 1.0F : 0.5F}"
                 app:bar_color="@color/purple"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/timerMM" />
+                app:layout_constraintTop_toBottomOf="@+id/elapsedTime" />
+
+            <com.airbnb.lottie.LottieAnimationView
+                android:layout_width="300dp"
+                android:layout_height="300dp"
+                app:isVisible="@{recordingState instanceof RecordingState.Recording}"
+                app:layout_constraintBottom_toBottomOf="@+id/elapsedTime"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.41"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/elapsedTime"
+                app:lottie_autoPlay="true"
+                app:lottie_loop="true"
+                app:lottie_rawRes="@raw/lottie_green_circle" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/startPause"
+                android:id="@+id/start"
                 style="@style/btn_typical"
                 android:layout_marginTop="24dp"
-                android:text="@string/start"
-                app:backgroundTint="?attr/colorAccent"
+                android:alpha="@{recordingState instanceof RecordingState.Recorded ? 0.5F : 1F}"
+                android:clickable="@{!(recordingState instanceof RecordingState.Recorded)}"
+                android:text="@{recordingState instanceof RecordingState.Paused ? @string/resume : @string/start}"
+                app:backgroundTint="@color/colorPrimary"
+                tools:text="@string/start"
+                app:isInvisible="@{recordingState instanceof RecordingState.Recording}"
                 app:cornerRadius="@dimen/corner_radius_typical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/graph" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/save"
-                style="@style/btn_typical"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="@string/save"
-                android:visibility="gone"
-                app:backgroundTint="?attr/colorAccent"
-                app:cornerRadius="@dimen/corner_radius_typical"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/cancel"
-                app:layout_constraintHorizontal_chainStyle="packed"
-                app:layout_constraintStart_toStartOf="@+id/mappingEditTextLayout"
-                tools:visibility="visible" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/stop"
@@ -100,34 +84,50 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
+                android:layout_marginBottom="32dp"
                 android:text="@string/stop"
                 app:cornerRadius="@dimen/corner_radius_typical"
-                app:layout_constraintEnd_toEndOf="@+id/startPause"
-                app:layout_constraintStart_toStartOf="@+id/startPause"
-                app:layout_constraintTop_toBottomOf="@+id/startPause" />
+                app:isInvisible="@{recordingState instanceof RecordingState.Recording || recordingState instanceof RecordingState.Paused}"
+                app:layout_constraintBottom_toTopOf="@+id/mappingEditTextLayout"
+                app:layout_constraintEnd_toEndOf="@+id/start"
+                app:layout_constraintStart_toStartOf="@+id/start"
+                app:layout_constraintTop_toBottomOf="@+id/start"
+                app:layout_constraintVertical_bias="0.0" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/cancel"
+                android:id="@+id/pause"
                 style="@style/btn_typical_outlined"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:text="@string/cancel"
+                android:text="@string/pause"
                 android:visibility="gone"
                 app:cornerRadius="@dimen/corner_radius_typical"
-                app:layout_constraintBaseline_toBaselineOf="@+id/save"
-                app:layout_constraintEnd_toEndOf="@+id/mappingEditTextLayout"
-                app:layout_constraintHorizontal_bias="0.5"
-                app:layout_constraintHorizontal_chainStyle="packed"
-                app:layout_constraintStart_toEndOf="@+id/save"
-                tools:visibility="visible" />
+                app:isVisible="@{recordingState instanceof RecordingState.Recording}"
+                app:layout_constraintBottom_toBottomOf="@+id/start"
+                app:layout_constraintEnd_toEndOf="@+id/start"
+                app:layout_constraintStart_toStartOf="@+id/start"
+                app:layout_constraintTop_toTopOf="@+id/start" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/stop_active"
+                style="@style/btn_typical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/stop"
+                android:visibility="gone"
+                app:backgroundTint="@color/colorPrimary"
+                app:cornerRadius="@dimen/corner_radius_typical"
+                app:isVisible="@{recordingState instanceof RecordingState.Recording || recordingState instanceof RecordingState.Paused}"
+                app:layout_constraintBottom_toBottomOf="@+id/stop"
+                app:layout_constraintEnd_toEndOf="@+id/stop"
+                app:layout_constraintStart_toStartOf="@+id/stop"
+                app:layout_constraintTop_toTopOf="@+id/stop" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/mappingEditTextLayout"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="@dimen/margin_md"
-                android:layout_marginTop="24dp"
                 android:hint="@string/gesture_mapping_hint"
                 android:visibility="gone"
                 app:boxCornerRadiusBottomEnd="@dimen/corner_radius_typical"
@@ -136,10 +136,10 @@
                 app:endIconDrawable="@drawable/ic_baseline_clear_24"
                 app:endIconMode="custom"
                 app:endIconTint="?attr/colorOnSurface"
-                app:layout_constraintBottom_toTopOf="@+id/save"
+                app:isVisible="@{recordingState instanceof RecordingState.Recorded}"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintVertical_bias="1.0"
                 tools:visibility="visible">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -147,8 +147,41 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textMultiLine"
+                    android:maxLength="100"
                     android:maxLines="3"
                     android:minLines="2" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="8dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/save"
+                        style="@style/btn_typical"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:text="@string/save"
+                        android:visibility="gone"
+                        app:backgroundTint="?attr/colorAccent"
+                        app:cornerRadius="@dimen/corner_radius_typical"
+                        app:isVisible="@{recordingState instanceof RecordingState.Recorded}"
+                        tools:visibility="visible" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/cancel"
+                        style="@style/btn_typical_outlined"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:text="@string/cancel"
+                        android:visibility="gone"
+                        app:cornerRadius="@dimen/corner_radius_typical"
+                        app:isVisible="@{recordingState instanceof RecordingState.Recorded}"
+                        tools:visibility="visible" />
+                </LinearLayout>
             </com.google.android.material.textfield.TextInputLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

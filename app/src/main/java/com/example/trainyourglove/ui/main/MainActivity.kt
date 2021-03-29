@@ -2,6 +2,7 @@ package com.example.trainyourglove.ui.main
 
 import android.animation.ValueAnimator
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import android.view.animation.Animation
@@ -9,19 +10,21 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.asLiveData
 import androidx.viewpager2.widget.ViewPager2
 import com.example.trainyourglove.R
 import com.example.trainyourglove.connectivity.AppBluetooth
 import com.example.trainyourglove.databinding.ActivityMainBinding
 import com.example.trainyourglove.ui.main.adapters.ScreenSlidePagerAdapter
 import com.example.trainyourglove.utils.AppLogger
-import com.example.trainyourglove.utils.showShortToast
+import com.example.trainyourglove.utils.SnackBarInterface
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
 
-class MainActivity : AppCompatActivity(), View.OnClickListener {
+class MainActivity : AppCompatActivity(), View.OnClickListener, SnackBarInterface {
 
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var _binding: ActivityMainBinding
 
     private lateinit var viewPager: ViewPager2
     private lateinit var pagerAdapter: ScreenSlidePagerAdapter
@@ -30,35 +33,35 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private val appBluetooth: AppBluetooth by lazy { AppBluetooth.getInstance() }
 
-//    private lateinit var logsAdapter: LogsAdapter
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        _binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         AppLogger.getInstance(application).log("App started") // DEBUG
 
         // Setting up viewpager
         pagerAdapter = ScreenSlidePagerAdapter(this)
-        viewPager = binding.viewPager
+        viewPager = _binding.viewPager
         viewPager.adapter = pagerAdapter
 
         // Setting up tab layout
-        TabLayoutMediator(binding.tabs, viewPager) { tab, position ->
+        TabLayoutMediator(_binding.tabs, viewPager) { tab, position ->
             tab.setText(pagerAdapter.title[position])
         }.attach()
 
         // Click listeners
-        binding.connect.setOnClickListener(this)
-        binding.connect.setOnLongClickListener {
+        _binding.connect.setOnClickListener(this)
+        _binding.connect.setOnLongClickListener {
             AppLogger.getInstance(application).shareActiveLog(this)
             true
         }
 
-        // Logs list
-//        logsAdapter = LogsAdapter()
-//        binding.debugLogs.adapter = logsAdapter
+        // Night mode configs.
+        val isNightMode =
+            resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+
+        _binding.isNightMode = isNightMode
 
         subscribeObservers()
 
@@ -67,7 +70,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     private fun subscribeObservers() {
-        appBluetooth.connectionState.observe(this, { state ->
+        appBluetooth.connectionState.asLiveData().observe(this, { state ->
             setupConnectButtonState(state!!)
         })
     }
@@ -75,23 +78,28 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private var mConnectingAnimator: ValueAnimator? = null
 
     private fun setupConnectButtonState(state: AppBluetooth.ConnectionState) {
+        // Update binding object
+        _binding.connectionState = state
+
         // Remove animator on state change
         mConnectingAnimator?.cancel()
         mConnectingAnimator = null
 
         when (state) {
-            AppBluetooth.ConnectionState.Connected -> {
-                binding.connect.setColorFilter(ContextCompat.getColor(this, R.color.lightGreen))
-                binding.connect.alpha = 1F
+            is AppBluetooth.ConnectionState.Connected -> {
+                _binding.connect.setColorFilter(ContextCompat.getColor(this, R.color.lightGreen))
+                _binding.connect.alpha = 1F
             }
-            AppBluetooth.ConnectionState.Error -> {
-                showShortToast("Couldn't connect")
+            is AppBluetooth.ConnectionState.Error -> {
+                if (!state.suppressToast) {
+                    showSnackBar("Couldn't connect")
+                }
 
-                binding.connect.setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary))
-                binding.connect.alpha = 0.5F
+                _binding.connect.setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary))
+                _binding.connect.alpha = 0.5F
             }
-            AppBluetooth.ConnectionState.Connecting -> {
-                binding.connect.alpha = 0.8F
+            is AppBluetooth.ConnectionState.Connecting -> {
+                _binding.connect.alpha = 0.8F
 
                 mConnectingAnimator = ValueAnimator.ofArgb(
                     ContextCompat.getColor(this, R.color.colorPrimary),
@@ -100,19 +108,21 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 ).apply {
                     // Add animation update listener
                     addUpdateListener { animation ->
-                        binding.connect.setColorFilter(animation.animatedValue as Int)
+                        _binding.connect.setColorFilter(animation.animatedValue as Int)
                         repeatCount = Animation.INFINITE
                         duration = 1000
                     }
                     start() // STart animation
                 }
             }
-            AppBluetooth.ConnectionState.Disconnected -> { // Disconnected
-                showShortToast("Disconnected")
+            else -> { // Disconnected or Ideal
+                if (state is AppBluetooth.ConnectionState.Disconnected) {
+                    showSnackBar("Disconnected")
+                }
 
-                binding.connect.setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary))
-                binding.connect.alpha = 0.5F
-            } // else; IDEAL
+                _binding.connect.setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary))
+                _binding.connect.alpha = 0.5F
+            }
         }
     }
 
@@ -120,14 +130,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onRestoreInstanceState(savedInstanceState)
 
         // Restoring current page
-        binding.viewPager.currentItem = viewModel.getIndex()
+        _binding.viewPager.currentItem = viewModel.getIndex()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
         // Saving current page
-        viewModel.setIndex(binding.viewPager.currentItem)
+        viewModel.setIndex(_binding.viewPager.currentItem)
     }
 
     override fun onBackPressed() {
@@ -173,5 +183,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         } else {
             appBluetooth.connect(this)
         }
+    }
+
+    override fun showSnackBar(msg: String) {
+        Snackbar.make(_binding.root, msg, Snackbar.LENGTH_SHORT).show()
     }
 }

@@ -18,19 +18,41 @@ class PreferenceManager private constructor(context: Context) {
         putString(KEY_LAST_CONNECTED_DEVICE_ADDRESS, device.address)
     }
 
-    fun putString(key: String, value: String) {
+    fun getMaintanedPrimaryKey(): Int {
+        val lastPrimaryKey = getInt(KEY_LAST_PRIMARY_KEY)
+        val newPrimaryKey = lastPrimaryKey + 1
+
+        // Update last
+        putInt(KEY_LAST_PRIMARY_KEY, newPrimaryKey)
+
+        return newPrimaryKey
+    }
+
+    private fun putString(key: String, value: String) {
         with(prefs.edit()) {
             putString(key, value)
             apply()
         }
     }
 
-    fun getString(key: String): String {
+    private fun getString(key: String): String {
         return prefs.getString(key, "") ?: ""
+    }
+
+    private fun putInt(key: String, value: Int) {
+        with(prefs.edit()) {
+            putInt(key, value)
+            apply()
+        }
+    }
+
+    private fun getInt(key: String): Int {
+        return prefs.getInt(key, 0)
     }
 
     companion object {
         private const val KEY_LAST_CONNECTED_DEVICE_ADDRESS = "last_connection_address"
+        private const val KEY_LAST_PRIMARY_KEY = "last_primary_key"
 
         @Volatile
         private var INSTANCE: PreferenceManager? = null

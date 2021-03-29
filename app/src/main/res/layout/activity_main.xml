@@ -5,6 +5,15 @@
 
     <data>
 
+        <variable
+            name="isNightMode"
+            type="Boolean" />
+
+        <variable
+            name="connectionState"
+            type="com.example.trainyourglove.connectivity.AppBluetooth.ConnectionState" />
+
+        <import type="com.example.trainyourglove.connectivity.AppBluetooth.ConnectionState" />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -27,18 +36,34 @@
                     android:layout_gravity="center"
                     android:text="@string/app_name" />
 
-                <ImageButton
-                    android:id="@+id/connect"
-                    android:layout_width="40dp"
+                <RelativeLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_gravity="end"
-                    android:layout_margin="@dimen/margin_md"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/connect"
-                    android:scaleType="centerInside"
-                    android:alpha="0.5"
-                    app:tint="@color/colorPrimary"
-                    android:src="@drawable/ic_baseline_bluetooth_24" />
+                    android:layout_marginEnd="@dimen/margin_md">
+
+                    <com.airbnb.lottie.LottieAnimationView
+                        android:layout_width="54dp"
+                        android:layout_height="match_parent"
+                        android:layout_centerInParent="true"
+                        android:visibility="invisible"
+                        app:isInvisible="@{!isNightMode || !(connectionState instanceof ConnectionState.Connected)}"
+                        app:lottie_autoPlay="true"
+                        app:lottie_loop="true"
+                        app:lottie_rawRes="@raw/lottie_blue_circle"/>
+
+                    <ImageButton
+                        android:id="@+id/connect"
+                        android:layout_width="40dp"
+                        android:alpha="0.5"
+                        android:layout_height="match_parent"
+                        android:layout_centerInParent="true"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/connect"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_baseline_bluetooth_24"
+                        app:tint="@color/colorPrimary" />
+                </RelativeLayout>
             </com.google.android.material.appbar.MaterialToolbar>
 
             <com.google.android.material.tabs.TabLayout

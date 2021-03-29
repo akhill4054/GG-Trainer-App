@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 
 

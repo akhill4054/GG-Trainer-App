@@ -9,9 +9,9 @@ import kotlinx.coroutines.*
 
 private const val CHANGE_VELOCITY =
     0.03F // Ranges from 0.0F (0% of |minValue - maxValue|) to 1.0F (100% of |minValue - maxValue|).
-private const val BAR_COUNT = 25 // Must be an odd number.
+private const val BAR_COUNT = 29 // Will be rounded to an odd number (if it's not odd).
 private const val BAR_WIDTH =
-    0.8F // Ranges from 0.0F (0% of max width) to 1.0F (100% of max width).
+    0.7F // Ranges from 0.0F (0% of max width) to 1.0F (100% of max width).
 
 private const val TAG = "Visualizer"
 
@@ -89,6 +89,12 @@ class Visualizer @JvmOverloads constructor(
         color = barFillColor
     }
 
+    override fun setAlpha(alpha: Float) {
+        super.setAlpha(alpha)
+
+        fillPaint.alpha = (alpha * 255).toInt()
+    }
+
     /**
      * Size of passed values (ranging from [mSetMinValue] to [mSetMaxValue]) should be non-zero.
      * @param values
@@ -126,7 +132,7 @@ class Visualizer @JvmOverloads constructor(
         // Justify values
         for (i in mLocalProvidedValues.indices) {
             if (mLocalProvidedValues[i] < 0) {
-                mLocalProvidedValues[i] = -mLocalProvidedValues[i]
+                mLocalProvidedValues[i] = -(mSetMinValue - mLocalProvidedValues[i]) + 1
             }
         }
 
@@ -134,7 +140,7 @@ class Visualizer @JvmOverloads constructor(
             mLocalProvidedValues.size == m -> {
                 for (i in mLocalProvidedValues.indices) mValues[i] = mLocalProvidedValues[i]
             }
-            mValues.size > m -> {
+            mLocalProvidedValues.size > m -> {
                 val groupSize = mLocalProvidedValues.size / m
 
                 for (i in mLocalProvidedValues.indices) {
@@ -152,17 +158,28 @@ class Visualizer @JvmOverloads constructor(
                     mValues[i] = avg
                 }
             }
-            else -> { // m > size(values)
-                val groupSize = m / mValues.size
-
-                // Shifting all the values to right by one position.
-                for (i in (mValues.size - 1) downTo 1) {
-                    mValues[i] = mValues[i - 1]
-                }
+            else -> { // mLocalProvidedValues > size(values)/size(providedValues)
+                val groupSize = mValues.size / mLocalProvidedValues.size
 
                 // Updating values at propagation start indices
                 for (i in mLocalProvidedValues.indices) {
                     mValues[i * groupSize] = mLocalProvidedValues[i]
+
+                    val start = i * groupSize + 1
+                    val end = if (i == mLocalProvidedValues.size - 1) {
+                        mValues.size - 1
+                    } else {
+                        (i + 1) * groupSize - 1
+                    }
+
+                    var off = 1
+                    val mOff = end - start + 1
+                    val v = mValues[start - 1]
+                    val m = -3 * v / (4 * mOff)
+
+                    for (j in start..end) {
+                        mValues[j] = m * off++ + v
+                    }
                 }
             }
         }
@@ -187,10 +204,16 @@ class Visualizer @JvmOverloads constructor(
             while (isActive) {
                 // If we can obtain a valid drawing surface...
                 if (holder.surface.isValid) {
+                    val canvas = holder.lockCanvas()
+
+                    if (canvas == null) {
+                        delay(100)
+                        continue
+                    }
+
                     // Generate values using latest provided values
                     generateValues()
 
-                    val canvas = holder.lockCanvas()
                     canvas.drawColor(0, PorterDuff.Mode.CLEAR)
 
                     // Updating values gradually to latest values.
@@ -245,22 +268,22 @@ class Visualizer @JvmOverloads constructor(
                         // Cap/semi-circle of/on the top of bar.
                         val x = maxBarWidth * i + lrBarMargin
 
-//                        bitmapCanvas.drawArc( (older impl)
-//                            x,
-//                            midH - h - barWidth / 2,
-//                            x + barWidth,
-//                            midH - h + barWidth / 2,
-//                            -180F,
-//                            180F,
-//                            true,
-//                            fillPaint
-//                        )
-                        bitmapCanvas.drawCircle(
-                            x + barWidth / 2,
-                            midH - h,
-                            barWidth / 2,
+                        bitmapCanvas.drawArc(
+                            x,
+                            midH - h - barWidth / 2,
+                            x + barWidth,
+                            midH - h + barWidth / 2 + 1,
+                            -180F,
+                            180F,
+                            true,
                             fillPaint
                         )
+//                        bitmapCanvas.drawCircle(
+//                            x + barWidth / 2,
+//                            midH - h,
+//                            barWidth / 2,
+//                            fillPaint
+//                        )
                         bitmapCanvas.drawRect(x, midH - h, x + barWidth, midH, fillPaint)
                     }
 
