@@ -20,4 +20,10 @@
     <string name="connect">Connect</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
+    <string name="action_button">Action button</string>
+    <string name="sync">Sync</string>
+    <string name="options_menu">Options menu</string>
+    <string name="no_recorded_gestures">No recorded gestures</string>
+    <string name="no_synced_gestures">No synced gestures</string>
+    <string name="delete">Delete</string>
 </resources>

@@ -8,8 +8,7 @@ import androidx.room.TypeConverters
 import com.example.trainyourglove.data.db.daos.GesturesDao
 import com.example.trainyourglove.data.db.entities.Gesture
 
-@Database(entities = [Gesture::class], version = 1)
-@TypeConverters(Converters::class)
+@Database(entities = [Gesture::class], version = 2)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun gesturesDao(): GesturesDao
 
@@ -26,9 +25,10 @@ abstract class AppDatabase : RoomDatabase() {
                 localRef ?: Room.databaseBuilder(
                     application,
                     AppDatabase::class.java, "com.example.gg_trainer_db",
-                ).build().apply {
-                    INSTANCE = this
-                }
+                ).fallbackToDestructiveMigration()
+                    .build().apply {
+                        INSTANCE = this
+                    }
             }
         }
     }

@@ -5,8 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.trainyourglove.MIN_RECORDING_TIME_IN_SECONDS
 import com.example.trainyourglove.connectivity.AppBluetooth
-import com.example.trainyourglove.data.db.AppDatabase
 import com.example.trainyourglove.data.db.entities.Gesture
+import com.example.trainyourglove.data.repositories.GesturesRepository
 import com.example.trainyourglove.utils.FileUtils
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +18,8 @@ import java.io.File
 import java.util.*
 
 class RecordingViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val _gesturesRepository by lazy { GesturesRepository.getInstance(application) }
 
     val appBluetooth = AppBluetooth.getInstance()
 
@@ -152,7 +154,7 @@ class RecordingViewModel(application: Application) : AndroidViewModel(applicatio
 
         // Save file
         viewModelScope.launch {
-            AppDatabase.getInstance(getApplication()).gesturesDao().insert(
+            _gesturesRepository.insert(
                 Gesture(
                     mappedText = mappedString,
                     dataFileUri = recordingFile!!.toURI().toString(),

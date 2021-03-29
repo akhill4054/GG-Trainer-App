@@ -13,6 +13,7 @@
 
     <dimen name="size_title">20sp</dimen>
 
+    <dimen name="corner_radius_md">6dp</dimen>
     <dimen name="corner_radius_typical">10dp</dimen>
 
     <dimen name="padding_dialog">16dp</dimen>

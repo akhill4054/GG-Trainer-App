@@ -6,7 +6,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.trainyourglove.R
 import com.example.trainyourglove.ui.main.fragments.record.RecordGestureFragment
 import com.example.trainyourglove.ui.main.fragments.sync.SyncFragment
-import com.example.trainyourglove.ui.main.fragments.sync.SyncedFragment
+import com.example.trainyourglove.ui.main.fragments.synced.SyncedFragment
 
 class ScreenSlidePagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
 

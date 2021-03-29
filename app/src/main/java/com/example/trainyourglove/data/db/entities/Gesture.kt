@@ -9,24 +9,11 @@ data class Gesture(
     val id: Long = 0L,
     val mappedText: String,
     val dataFileUri: String,
-    val syncStatus: SyncStatus = SyncStatus.Sync,
+    val syncStatus: Int = SYNC_STATUS_SYNC,
     val durationMillis: Long
 ) {
-    sealed class SyncStatus {
-        object Sync : SyncStatus()
-        object Synced : SyncStatus()
-
-        fun toInt(): Int {
-            return if (this is Sync) SYNC_AS_INT else SYNCED_AS_INT
-        }
-
-        companion object {
-            const val SYNC_AS_INT = 0
-            const val SYNCED_AS_INT = 1
-
-            fun fromInt(status: Int): SyncStatus {
-                return if (status == SYNCED_AS_INT) Sync else Synced
-            }
-        }
+    companion object {
+        const val SYNC_STATUS_SYNC = 0
+        const val SYNC_STATUS_SYNCED = 1
     }
 }

@@ -43,6 +43,7 @@
                     android:layout_marginEnd="@dimen/margin_md">
 
                     <com.airbnb.lottie.LottieAnimationView
+                        android:id="@+id/connectedLottieAnimation"
                         android:layout_width="54dp"
                         android:layout_height="match_parent"
                         android:layout_centerInParent="true"
@@ -106,13 +107,5 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/item_log" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab"
-            style="@style/fab_typical"
-            android:visibility="gone"
-            app:backgroundTint="?attr/colorAccent"
-            app:tint="@color/white"
-            tools:srcCompat="@drawable/ic_baseline_save_24" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
