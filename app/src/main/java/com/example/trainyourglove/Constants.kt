@@ -10,4 +10,4 @@ const val MAX_ACC_VALUE = 19000
 const val START_OF_LINE_CHAR = '^'
 const val END_OF_LINE_CHAR = '*'
 
-const val RECORD_FILE_PREFIX = "RECORDING-DATA"
+const val RECORDING_FILE_PREFIX = "RECORDING-DATA"

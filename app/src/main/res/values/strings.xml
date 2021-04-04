@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">GG Trainer</string>
 
+    <string name="main_tab_0">Translate</string>
     <string name="main_tab_1">Record</string>
-    <string name="main_tab_2">Sync</string>
-    <string name="main_tab_3">Synced</string>
+    <string name="main_tab_2">Recorded</string>
 
     <string name="menu_settings">Settings</string>
     <string name="menu_help">Help</string>
@@ -26,4 +26,10 @@
     <string name="no_recorded_gestures">No recorded gestures</string>
     <string name="no_synced_gestures">No synced gestures</string>
     <string name="delete">Delete</string>
+    <string name="remove">Remove</string>
+    <string name="syncing">Syncing…</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="synced">Synced</string>
+    <string name="tripe_dot">...</string>
 </resources>

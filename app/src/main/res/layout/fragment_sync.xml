@@ -8,12 +8,16 @@
         <variable
             name="gesturesData"
             type="java.util.List" />
+
+        <variable
+            name="isSyncInProgress"
+            type="Boolean" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.main.fragments.sync.SyncFragment">
+        tools:context=".ui.main.recorded.sync.SyncFragment">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/gestures"
@@ -21,11 +25,11 @@
             android:layout_height="match_parent"
             android:background="@color/gesture_cards_list_bg"
             android:visibility="invisible"
-            tools:visibility="visible"
             app:isVisible="@{gesturesData.size() != 0}"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:itemCount="3"
-            tools:listitem="@layout/item_recorded_gesture" />
+            tools:listitem="@layout/item_recorded_gesture"
+            tools:visibility="visible" />
 
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/lottieAnimationView2"
@@ -57,5 +61,44 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/lottieAnimationView2" />
+
+        <View
+            android:id="@+id/progress_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.45"
+            android:background="@android:color/black"
+            android:visibility="gone"
+            app:isVisible="@{isSyncInProgress}" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieAnimationView3"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:visibility="gone"
+            app:lottie_rawRes="@raw/lottie_syncing"
+            app:isVisible="@{isSyncInProgress}"
+            app:layout_constraintBottom_toTopOf="@+id/textView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/syncing"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:visibility="gone"
+            app:isVisible="@{isSyncInProgress}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/lottieAnimationView3"
+            app:layout_constraintStart_toStartOf="@+id/lottieAnimationView3"
+            app:layout_constraintTop_toBottomOf="@+id/lottieAnimationView3" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

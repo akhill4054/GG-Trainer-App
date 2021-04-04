@@ -26,13 +26,16 @@ class RecordedGesturesAdapter(
 
     class ViewHolder(
         val binding: ItemRecordedGestureBinding,
-        val itemCallback: ItemCallback
+        private val itemCallback: ItemCallback
     ) : RecyclerView.ViewHolder(binding.root) {
 
         init {
             // Click listeners
             binding.optionsMenu.setOnClickListener {
                 showOptionsMenu()
+            }
+            binding.syncAction.setOnClickListener {
+                itemCallback.onSyncAction(binding.gesture!!)
             }
         }
 
@@ -78,7 +81,7 @@ class RecordedGesturesAdapter(
 
     class DiffCallback : DiffUtil.ItemCallback<Gesture>() {
         override fun areItemsTheSame(oldItem: Gesture, newItem: Gesture): Boolean {
-            return oldItem.id == newItem.id
+            return oldItem.mappedText == newItem.mappedText
         }
 
         override fun areContentsTheSame(oldItem: Gesture, newItem: Gesture): Boolean {
@@ -87,6 +90,7 @@ class RecordedGesturesAdapter(
     }
 
     interface ItemCallback {
+        fun onSyncAction(gesture: Gesture)
         fun onDelete(gesture: Gesture)
     }
 }

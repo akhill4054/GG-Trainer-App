@@ -81,4 +81,11 @@ dependencies {
     kapt "androidx.room:room-compiler:$room_version"
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation "androidx.room:room-ktx:$room_version"
+
+    // Retrofit and GSON
+    implementation 'com.squareup.retrofit2:converter-gson:2.8.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+
+    // DEBUG
+    debugCompile 'com.readystatesoftware.chuck:library:1.1.0'
 }

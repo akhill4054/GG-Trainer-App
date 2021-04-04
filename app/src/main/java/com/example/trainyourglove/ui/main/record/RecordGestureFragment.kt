@@ -1,4 +1,4 @@
-package com.example.trainyourglove.ui.main.fragments.record
+package com.example.trainyourglove.ui.main.record
 
 import android.content.Context
 import android.os.Bundle
@@ -17,15 +17,12 @@ import com.example.trainyourglove.MAX_ACC_VALUE
 import com.example.trainyourglove.MIN_ACC_VALUE
 import com.example.trainyourglove.MIN_RECORDING_TIME_IN_SECONDS
 import com.example.trainyourglove.R
+import com.example.trainyourglove.connectivity.AppBluetooth
 import com.example.trainyourglove.databinding.FragmentRecordGestureBinding
 import com.example.trainyourglove.ui.main.widgets.Visualizer
 import com.example.trainyourglove.utils.AppLogger
 import com.example.trainyourglove.utils.SnackBarInterface
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 class RecordGestureFragment : Fragment() {
     private lateinit var _binding: FragmentRecordGestureBinding
@@ -82,14 +79,16 @@ class RecordGestureFragment : Fragment() {
                 // Clear mapping editText
                 _binding.mappingEditText.setText("")
 
+                // Hide keyboard
+                hideKeyboard()
+
                 showSnackBar("Saved")
             } else {
+                _binding.mappingEditTextLayout.error =
+                    "Please enter a meaning for the recorded gesture..."
                 _binding.mappingEditTextLayout.isErrorEnabled = true
                 showKeyBoard(_binding.mappingEditText)
             }
-
-            // Hide keyboard
-            hideKeyboard()
         }
         _binding.start.setOnClickListener {
             _viewModel.startResumeRecording()
@@ -116,11 +115,11 @@ class RecordGestureFragment : Fragment() {
 
         // Debug
         _binding.start.setOnLongClickListener {
-            startFakeGenerator()
+            AppBluetooth.getInstance().turnOnFakeMode(requireActivity())
             true
         }
         _binding.stop.setOnLongClickListener {
-            stopFakeValueGenerator()
+            AppBluetooth.getInstance().turnOffFakeMode()
             true
         }
     }
@@ -188,39 +187,39 @@ class RecordGestureFragment : Fragment() {
         mVisualizer.start(MIN_ACC_VALUE, MAX_ACC_VALUE)
     }
 
-    private var mFakeValuesGeneratorJob: Job? = null
-
-    private fun startFakeGenerator() {
-        mFakeValuesGeneratorJob?.cancel()
-
-        val min = -19000F
-        val max = 19000F
-        val vel = (max - min) * 0.1F // 30%
-
-        val values = FloatArray(6) { 0F }
-
-        mFakeValuesGeneratorJob = lifecycleScope.launch {
-            while (isActive) {
-                for (i in values.indices) {
-                    val dy = if ((0..1).random() == 0) 1 else -1
-                    values[i] += dy * vel
-                    if (dy > 0) {
-                        if (values[i] > max) values[i] = max
-                    } else {
-                        if (values[i] < min) values[i] = min
-                    }
-                }
-                delay(100)
-            }
-        }
-
-        // Provide to visualizer
-        mVisualizer.updateValues(values)
-    }
-
-    private fun stopFakeValueGenerator() {
-        mFakeValuesGeneratorJob?.cancel()
-    }
+//    private var mFakeValuesGeneratorJob: Job? = null
+//
+//    private fun startFakeGenerator() {
+//        mFakeValuesGeneratorJob?.cancel()
+//
+//        val min = -19000F
+//        val max = 19000F
+//        val vel = (max - min) * 0.1F // 30%
+//
+//        val values = FloatArray(6) { 0F }
+//
+//        mFakeValuesGeneratorJob = lifecycleScope.launch {
+//            while (isActive) {
+//                for (i in values.indices) {
+//                    val dy = if ((0..1).random() == 0) 1 else -1
+//                    values[i] += dy * vel
+//                    if (dy > 0) {
+//                        if (values[i] > max) values[i] = max
+//                    } else {
+//                        if (values[i] < min) values[i] = min
+//                    }
+//                }
+//                delay(100)
+//            }
+//        }
+//
+//        // Provide to visualizer
+//        mVisualizer.updateValues(values)
+//    }
+//
+//    private fun stopFakeValueGenerator() {
+//        mFakeValuesGeneratorJob?.cancel()
+//    }
 
     override fun onStop() {
         super.onStop()

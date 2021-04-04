@@ -1,32 +1,37 @@
 package com.example.trainyourglove.ui.main.adapters
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.example.trainyourglove.R
-import com.example.trainyourglove.ui.main.fragments.record.RecordGestureFragment
-import com.example.trainyourglove.ui.main.fragments.sync.SyncFragment
-import com.example.trainyourglove.ui.main.fragments.synced.SyncedFragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentStatePagerAdapter
+import com.example.trainyourglove.ui.main.record.RecordGestureFragment
+import com.example.trainyourglove.ui.main.recorded.RecordedFragment
+import com.example.trainyourglove.ui.main.translate.TranslateFragment
 
-class ScreenSlidePagerAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
+class ScreenSlidePagerAdapter(
+    fm: FragmentManager
+) : FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
-    val title = arrayOf(
-        R.string.main_tab_1,
-        R.string.main_tab_2,
-        R.string.main_tab_3
+    private val titles = arrayOf(
+        "Translate",
+        "Record",
+        "Recorded"
     )
 
     private val fragments = arrayOf(
+        TranslateFragment(),
         RecordGestureFragment(),
-        SyncFragment(),
-        SyncedFragment()
+        RecordedFragment()
     )
 
-    override fun createFragment(position: Int): Fragment {
-        return fragments[position]
+    override fun getPageTitle(position: Int): CharSequence {
+        return titles[position]
     }
 
-    override fun getItemCount(): Int {
+    override fun getCount(): Int {
         return fragments.size
+    }
+
+    override fun getItem(position: Int): Fragment {
+        return fragments[position]
     }
 }

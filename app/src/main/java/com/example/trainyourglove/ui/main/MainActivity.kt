@@ -11,9 +11,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.asLiveData
-import androidx.viewpager2.widget.ViewPager2
+import androidx.lifecycle.lifecycleScope
+import androidx.viewpager.widget.ViewPager
 import com.example.trainyourglove.R
 import com.example.trainyourglove.connectivity.AppBluetooth
+import com.example.trainyourglove.data.db.AppDatabase
+import com.example.trainyourglove.data.db.entities.Gesture
+import com.example.trainyourglove.data.repositories.NetRepository
 import com.example.trainyourglove.databinding.ActivityMainBinding
 import com.example.trainyourglove.ui.main.adapters.ScreenSlidePagerAdapter
 import com.example.trainyourglove.utils.AppLogger
@@ -21,17 +25,19 @@ import com.example.trainyourglove.utils.SnackBarInterface
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(), View.OnClickListener, SnackBarInterface {
 
     private lateinit var _binding: ActivityMainBinding
 
-    private lateinit var viewPager: ViewPager2
-    private lateinit var pagerAdapter: ScreenSlidePagerAdapter
+    private lateinit var _viewPager: ViewPager
+    private lateinit var mPagerAdapter: ScreenSlidePagerAdapter
 
-    private val viewModel: MainViewModel by viewModels()
+    private val _viewModel: MainViewModel by viewModels()
 
-    private val appBluetooth: AppBluetooth by lazy { AppBluetooth.getInstance() }
+    private val _appBluetooth: AppBluetooth by lazy { AppBluetooth.getInstance() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,14 +47,39 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SnackBarInterfac
         AppLogger.getInstance(application).log("App started") // DEBUG
 
         // Setting up viewpager
-        pagerAdapter = ScreenSlidePagerAdapter(this)
-        viewPager = _binding.viewPager
-        viewPager.adapter = pagerAdapter
+        mPagerAdapter = ScreenSlidePagerAdapter(supportFragmentManager)
+        _viewPager = _binding.viewPager
+        _viewPager.adapter = mPagerAdapter
 
         // Setting up tab layout
-        TabLayoutMediator(_binding.tabs, viewPager) { tab, position ->
-            tab.setText(pagerAdapter.title[position])
-        }.attach()
+        _binding.tabs.setupWithViewPager(_viewPager)
+
+        // DEBUG
+        _binding.toolbarTitleText.setOnLongClickListener {
+            MaterialAlertDialogBuilder(this)
+                .setTitle("CONFIRM SERVER RESET!")
+                .setPositiveButton("Reset") { dialog, _ ->
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        // Remove synced gestures
+                        AppDatabase.getInstance(application).gesturesDao()
+                            .removeGestures(Gesture.SYNC_STATUS_SYNCED)
+                    }
+                    // Reset server
+                    NetRepository.getInstance(application)
+                        .reset(object : NetRepository.Callback<String> {
+                            override fun onData(data: String?) {
+                                runOnUiThread {
+                                    showSnackBar(data ?: "An error occurred!")
+                                }
+                            }
+                        })
+                    showSnackBar("Reset initiated")
+                    dialog.dismiss()
+                }.setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.dismiss()
+                }.show()
+            true
+        }
 
         // Click listeners
         _binding.connect.setOnClickListener(this)
@@ -66,11 +97,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SnackBarInterfac
         subscribeObservers()
 
         // Try to connect with the last connection.
-        appBluetooth.tryToConnectWithTheLastConnection(this)
+        _appBluetooth.tryToConnectWithTheLastConnection(this)
     }
 
     private fun subscribeObservers() {
-        appBluetooth.connectionState.asLiveData().observe(this, { state ->
+        _appBluetooth.connectionState.asLiveData().observe(this, { state ->
             setupConnectButtonState(state!!)
         })
     }
@@ -130,34 +161,34 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SnackBarInterfac
         super.onRestoreInstanceState(savedInstanceState)
 
         // Restoring current page
-        _binding.viewPager.currentItem = viewModel.getIndex()
+        _binding.viewPager.currentItem = _viewModel.getIndex()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
         // Saving current page
-        viewModel.setIndex(_binding.viewPager.currentItem)
+        _viewModel.setIndex(_binding.viewPager.currentItem)
     }
 
     override fun onBackPressed() {
-        if (viewPager.currentItem == 0) {
+        if (_viewPager.currentItem == 0) {
             super.onBackPressed()
         } else {
-            viewPager.currentItem -= 1
+            _viewPager.currentItem -= 1
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        appBluetooth.onEnableBluetoothActivityResult(this, requestCode, resultCode)
+        _appBluetooth.onEnableBluetoothActivityResult(this, requestCode, resultCode)
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
-        appBluetooth.close() // If open/connected
+        _appBluetooth.close() // If open/connected
     }
 
     override fun onClick(v: View?) {
@@ -169,19 +200,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SnackBarInterfac
     }
 
     private fun connect() {
-        if (appBluetooth.isConnected) {
+        if (_appBluetooth.isConnected) {
             // Show option to disconnect
             MaterialAlertDialogBuilder(this)
                 .setTitle("Already connected")
                 .setMessage("You may disconnect if you want.")
                 .setNegativeButton("Disconnect") { dialog, _ ->
-                    appBluetooth.close()
+                    _appBluetooth.close()
                     dialog.dismiss()
                 }.setPositiveButton("Cancel") { dialog, _ ->
                     dialog.dismiss()
                 }.show()
         } else {
-            appBluetooth.connect(this)
+            _appBluetooth.connect(this)
         }
     }
 

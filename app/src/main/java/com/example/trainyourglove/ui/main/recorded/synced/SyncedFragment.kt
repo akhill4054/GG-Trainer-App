@@ -1,4 +1,4 @@
-package com.example.trainyourglove.ui.main.fragments.sync
+package com.example.trainyourglove.ui.main.recorded.synced
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,24 +9,25 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.example.trainyourglove.R
 import com.example.trainyourglove.data.db.entities.Gesture
-import com.example.trainyourglove.databinding.FragmentSyncBinding
+import com.example.trainyourglove.databinding.FragmentSyncedBinding
 import com.example.trainyourglove.ui.main.adapters.RecordedGesturesAdapter
 import com.example.trainyourglove.utils.SnackBarInterface
 
-class SyncFragment : Fragment(), RecordedGesturesAdapter.ItemCallback {
 
-    private lateinit var _binding: FragmentSyncBinding
+class SyncedFragment : Fragment(), RecordedGesturesAdapter.ItemCallback {
 
-    private val _viewModel: SyncViewModel by viewModels()
+    private lateinit var _binding: FragmentSyncedBinding
+
+    private val viewModel: SyncedViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         // Inflate the layout for this fragment
         _binding = DataBindingUtil.inflate(
             inflater,
-            R.layout.fragment_sync,
+            R.layout.fragment_synced,
             container,
             false
         )
@@ -37,25 +38,26 @@ class SyncFragment : Fragment(), RecordedGesturesAdapter.ItemCallback {
         super.onViewCreated(view, savedInstanceState)
 
         // Setup views
-        // Gestures' list
-        val gesturesAdapter = RecordedGesturesAdapter(this)
-        _binding.gestures.adapter = gesturesAdapter
+        val adapter = RecordedGesturesAdapter(this)
+        _binding.gestures.adapter = adapter
 
         // Subscribe observers
-        _viewModel.syncGestures.observe(viewLifecycleOwner, { gestures ->
+        viewModel.syncedGestures.observe(viewLifecycleOwner, { gestures ->
             gestures!!.let {
                 _binding.gesturesData = gestures
-                gesturesAdapter.submitList(gestures)
+                adapter.submitList(gestures)
+            }
+        })
+    }
+
+    override fun onSyncAction(gesture: Gesture) {
+        viewModel.unsync(gesture).observe(viewLifecycleOwner, { status ->
+            if (status == true) {
+                (requireActivity() as SnackBarInterface).showSnackBar("Gesture removed")
             }
         })
     }
 
     override fun onDelete(gesture: Gesture) {
-        _viewModel.deleteGesture(gesture)
-        showSnackBar("Gesture deleted")
-    }
-
-    private fun showSnackBar(msg: String) {
-        (requireActivity() as SnackBarInterface).showSnackBar(msg)
     }
 }

@@ -7,9 +7,9 @@
 
         <variable
             name="recordingState"
-            type="com.example.trainyourglove.ui.main.fragments.record.RecordingViewModel.RecordingState" />
+            type="com.example.trainyourglove.ui.main.record.RecordingViewModel.RecordingState" />
 
-        <import type="com.example.trainyourglove.ui.main.fragments.record.RecordingViewModel.RecordingState" />
+        <import type="com.example.trainyourglove.ui.main.record.RecordingViewModel.RecordingState" />
     </data>
 
     <ScrollView
@@ -21,7 +21,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:context=".ui.main.fragments.sync.SyncFragment">
+            tools:context=".ui.main.recorded.sync.SyncFragment">
 
             <TextView
                 android:id="@+id/elapsedTime"
@@ -56,7 +56,7 @@
                 app:isVisible="@{recordingState instanceof RecordingState.Recording}"
                 app:layout_constraintBottom_toBottomOf="@+id/elapsedTime"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.41"
+                app:layout_constraintHorizontal_bias="0.45"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/elapsedTime"
                 app:lottie_autoPlay="true"

@@ -61,6 +61,31 @@ class GesturesRepository private constructor(application: Application) {
         }
     }
 
+    suspend fun removeSyncedGestures() {
+        _gesturesDao.getSyncedGestures()
+    }
+
+    suspend fun insertGestures(gestures: List<Gesture>) {
+        var hasSynced = false
+        var hasUnSynced = false
+
+        for (gesture in gestures) {
+            if (gesture.isSynced()) hasSynced = true
+            else hasUnSynced = true
+
+            if (hasSynced && hasUnSynced) break
+        }
+
+        _gesturesDao.insert(gestures)
+
+        if (hasSynced) {
+            updateSyncedGestures()
+        }
+        if (hasUnSynced) {
+            updateSyncGestures()
+        }
+    }
+
     private suspend fun updateOnChange(change: Int, gesture: Gesture) {
         when (change) {
             INSERT -> {
@@ -69,11 +94,8 @@ class GesturesRepository private constructor(application: Application) {
                 updateSyncGestures()
             }
             UPDATE -> {
-                if (gesture.syncStatus == Gesture.SYNC_STATUS_SYNC) {
-                    updateSyncGestures()
-                } else {
-                    updateSyncedGestures()
-                }
+                updateSyncGestures()
+                updateSyncedGestures()
             }
             else -> { // REMOVE
                 if (gesture.syncStatus == Gesture.SYNC_STATUS_SYNC) {

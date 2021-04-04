@@ -6,6 +6,10 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.util.Log
 import android.view.LayoutInflater
 import androidx.databinding.DataBindingUtil
@@ -25,10 +29,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.io.IOException
 import java.util.*
+import kotlin.math.abs
 
 private const val TAG = "AppBluetooth"
 
-class AppBluetooth private constructor() {
+class AppBluetooth private constructor() : SensorEventListener {
 
     private val _connectionState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
 
@@ -167,6 +172,7 @@ class AppBluetooth private constructor() {
 
                 // Cancel discovery because it otherwise slows down the connection.
                 bluetoothAdapter!!.cancelDiscovery()
+                turnOffFakeMode() // If turned ON.
 
                 // Connect to the remote device through the socket. This call blocks
                 // until it succeeds or throws an exception.
@@ -283,32 +289,6 @@ class AppBluetooth private constructor() {
             }
         }
 
-        private fun formatReadValuesForVisualizer(readMessage: String): FloatArray {
-            try {
-                var firstLine = ""
-                for (c in readMessage) {
-                    if (c == '\n') break
-                    else firstLine += c
-                }
-
-                val spiltLine = firstLine.trimEnd().removeSuffix(",").split(",")
-
-                val floats: List<Float> = spiltLine.map { c -> c.toFloat() }
-
-                val floatArray = FloatArray(floats.size)
-
-                // Copy list to array
-                for (i in floatArray.indices) {
-                    floatArray[i] = floats[i]
-                }
-
-                return floatArray
-            } catch (e: Exception) {
-                Log.e(TAG, "formatReadValuesForVisualizer: ", e)
-                return FloatArray(1) { 0F }
-            }
-        }
-
         fun write(bytes: ByteArray) {
             try {
                 mmOutStream.write(bytes)
@@ -345,9 +325,102 @@ class AppBluetooth private constructor() {
         mmSocket = null
         mConnection?.close()
 
+        turnOffFakeMode() // In case of, if it's ON.
+
         _connectionState.value = ConnectionState.Disconnected
         // To prevent toast on cofig. change/view-controller recreation
         _connectionState.value = ConnectionState.Ideal
+    }
+
+    private fun formatReadValuesForVisualizer(readMessage: String): FloatArray {
+        try {
+            var firstLine = ""
+            for (c in readMessage) {
+                if (c == '\n') break
+                else firstLine += c
+            }
+
+            val spiltLine = firstLine.trimEnd().removeSuffix(",").split(",")
+
+            val floats: List<Float> = spiltLine.map { c -> c.toFloat() }
+
+            val floatArray = FloatArray(floats.size)
+
+            // Copy list to array
+            for (i in floatArray.indices) {
+                floatArray[i] = floats[i]
+            }
+
+            return floatArray
+        } catch (e: Exception) {
+            Log.e(TAG, "formatReadValuesForVisualizer: ", e)
+            return FloatArray(1) { 0F }
+        }
+    }
+
+    private var _sensorManager: SensorManager? = null
+    private var _accelerometer: Sensor? = null
+
+    fun turnOnFakeMode(activity: Activity) {
+        if (isDisconnected) {
+            _sensorManager = activity.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+            _accelerometer = _sensorManager!!.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+            if (_accelerometer != null) {
+                _sensorManager!!.registerListener(
+                    this,
+                    _accelerometer,
+                    SensorManager.SENSOR_DELAY_UI
+                )
+            } else {
+                activity.showShortToast("Device doesn't have accelerometer.")
+                turnOffFakeMode()
+                return
+            }
+
+            // Change state
+            _connectionState.value = ConnectionState.Connected
+        }
+    }
+
+    private var lastX = 0
+    private var lastY = 0
+    private var lastZ = 0
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        var deltaX = abs(lastX - event!!.values[0])
+        var deltaY = abs(lastY - event.values[1])
+        var deltaZ = abs(lastZ - event.values[2])
+
+        if (deltaX < 2) deltaX = 0F
+        if (deltaY < 2) deltaY = 0F
+        if (deltaZ < 2) deltaZ = 0F
+
+        mScope.launch {
+            var data = ""
+            for (i in 1..5) {
+                data += "${deltaX * 1000},${deltaY * 1000},${deltaZ * 1000}${if (i == 5) '\n' else ','}"
+            }
+
+            _readData.emit(data)
+            _onVisualizerData.postValue(formatReadValuesForVisualizer(data))
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+
+    }
+
+    fun turnOffFakeMode() {
+        _sensorManager?.unregisterListener(this)
+        _sensorManager = null
+        _accelerometer = null
+
+
+        if (mmSocket?.isConnected != true) { // Bluetooth is disconnected
+            // Change state
+            _connectionState.value = ConnectionState.Disconnected
+        }
     }
 
     sealed class ConnectionState {

@@ -32,7 +32,9 @@
                 android:background="?attr/colorSurface">
 
                 <TextView
+                    android:id="@+id/toolbar_title_text"
                     style="@style/title"
+                    android:padding="5dp"
                     android:layout_gravity="center"
                     android:text="@string/app_name" />
 
@@ -78,21 +80,21 @@
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="@string/main_tab_0" />
+
+                <com.google.android.material.tabs.TabItem
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="@string/main_tab_1" />
 
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/main_tab_2" />
-
-                <com.google.android.material.tabs.TabItem
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/main_tab_3" />
             </com.google.android.material.tabs.TabLayout>
         </com.google.android.material.appbar.AppBarLayout>
 
-        <androidx.viewpager2.widget.ViewPager2
+        <androidx.viewpager.widget.ViewPager
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

@@ -1,4 +1,4 @@
-package com.example.trainyourglove.ui.main.fragments.record
+package com.example.trainyourglove.ui.main.record
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -7,7 +7,7 @@ import com.example.trainyourglove.MIN_RECORDING_TIME_IN_SECONDS
 import com.example.trainyourglove.connectivity.AppBluetooth
 import com.example.trainyourglove.data.db.entities.Gesture
 import com.example.trainyourglove.data.repositories.GesturesRepository
-import com.example.trainyourglove.utils.FileUtils
+import com.example.trainyourglove.utils.AppFileUtils
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -118,7 +118,7 @@ class RecordingViewModel(application: Application) : AndroidViewModel(applicatio
 
         if (recordingFile == null) {
             // Create and open file, if not
-            recordingFile = FileUtils.createNewRecordFile(getApplication())
+            recordingFile = AppFileUtils.createNewRecordFile(getApplication())
         }
 
         recordingJob?.cancel()
@@ -126,7 +126,7 @@ class RecordingViewModel(application: Application) : AndroidViewModel(applicatio
             // Listen to incoming data
             appBluetooth.readData.collect { readData ->
                 // Write to file
-                recordingFile!!.appendText(readData + "\n")
+                recordingFile!!.appendText(readData)
             }
         }
 
