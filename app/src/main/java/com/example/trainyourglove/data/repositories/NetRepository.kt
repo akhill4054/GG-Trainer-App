@@ -41,6 +41,10 @@ class NetRepository(application: Application) {
         )
     }
 
+    fun syncSynchronously(gesture: SyncedGesture): Call<String> {
+        return mApiInterface.sync(gesture)
+    }
+
     fun sync(
         gesture: SyncedGesture,
         callback: Callback<String>

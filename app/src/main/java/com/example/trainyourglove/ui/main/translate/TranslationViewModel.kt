@@ -1,7 +1,6 @@
 package com.example.trainyourglove.ui.main.translate
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -9,8 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.trainyourglove.connectivity.AppBluetooth
 import com.example.trainyourglove.data.repositories.NetRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
@@ -25,23 +23,33 @@ class TranslationViewModel(application: Application) : AndroidViewModel(applicat
     val translationState: LiveData<TranslationState> = _translationState
 
     @Volatile
-    private var _translationJob: Job? = null
-
-    @Volatile
     private var isTranslationPaused = false
 
     init {
-        var i = 0
         viewModelScope.launch(Dispatchers.Default) {
+            var linesCount = 0
+            var collectedData = ""
             appBluetooth.readData.collect { data ->
                 if (!isTranslationPaused) {
-                    translate(data)
+                    if (++linesCount < 10) {
+                        collectedData += data
+                    } else {
+                        translate(collectedData)
+                        collectedData = ""
+                        linesCount = 0
+                    }
+                } else {
+                    linesCount = 0
+                    collectedData = ""
+                    delay(200)
                 }
             }
         }
     }
 
     fun startTranslation() {
+        // Reset state
+        _translationState.value = null
         isTranslationPaused = false
     }
 

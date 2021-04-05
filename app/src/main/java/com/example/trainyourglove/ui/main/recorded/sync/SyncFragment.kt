@@ -40,6 +40,15 @@ class SyncFragment : Fragment(), RecordedGesturesAdapter.ItemCallback {
         // Gestures' list
         val gesturesAdapter = RecordedGesturesAdapter(this)
         _binding.gestures.adapter = gesturesAdapter
+        // Click listeners
+        _binding.syncAll.setOnClickListener {
+            // Show progress
+            _binding.isSyncInProgress = true
+            _viewModel.syncAll().observe(viewLifecycleOwner, {
+                // Hide progress
+                _binding.isSyncInProgress = false
+            })
+        }
 
         // Subscribe observers
         _viewModel.syncGestures.observe(viewLifecycleOwner, { gestures ->

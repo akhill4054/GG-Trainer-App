@@ -11,6 +11,7 @@ import com.example.trainyourglove.data.repositories.NetRepository
 import com.example.trainyourglove.utils.AppFileUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 class SyncViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -40,6 +41,36 @@ class SyncViewModel(application: Application) : AndroidViewModel(application) {
                 // Show error
                 syncRequest.postValue(null)
             }
+        }
+
+        return syncRequest
+    }
+
+    fun syncAll(): LiveData<Boolean> {
+        val syncRequest = MutableLiveData<Boolean>()
+
+        viewModelScope.launch(Dispatchers.IO) {
+            for (gesture in syncGestures.value!!) {
+                val syncedGesture = gesture.toSyncedGesture(getApplication())
+
+                if (syncedGesture != null) {
+                    val call = _netRepo.syncSynchronously(syncedGesture)
+                    try {
+                        val response = call.execute()
+                        if (response.code() == 200) {
+                            _gesturesRepository.update(gesture.copy(syncStatus = Gesture.SYNC_STATUS_SYNCED))
+                        }
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
+                } else {
+                    // Remove the gesture from local db
+                    _gesturesRepository.remove(gesture)
+                    // Show error
+                    syncRequest.postValue(null)
+                }
+            }
+            syncRequest.postValue(true)
         }
 
         return syncRequest

@@ -17,6 +17,7 @@ import com.example.trainyourglove.R
 import com.example.trainyourglove.connectivity.AppBluetooth
 import com.example.trainyourglove.data.db.AppDatabase
 import com.example.trainyourglove.data.db.entities.Gesture
+import com.example.trainyourglove.data.repositories.GesturesRepository
 import com.example.trainyourglove.data.repositories.NetRepository
 import com.example.trainyourglove.databinding.ActivityMainBinding
 import com.example.trainyourglove.ui.main.adapters.ScreenSlidePagerAdapter
@@ -24,8 +25,8 @@ import com.example.trainyourglove.utils.AppLogger
 import com.example.trainyourglove.utils.SnackBarInterface
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(), View.OnClickListener, SnackBarInterface {
@@ -70,6 +71,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, SnackBarInterfac
                             override fun onData(data: String?) {
                                 runOnUiThread {
                                     showSnackBar(data ?: "An error occurred!")
+                                    if (data != null) {
+                                        // Remove all gestures from db
+                                        GlobalScope.launch {
+                                            GesturesRepository.getInstance(application)
+                                                .removeSyncedGestures()
+                                        }
+                                    }
                                 }
                             }
                         })

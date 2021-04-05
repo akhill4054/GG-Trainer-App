@@ -34,7 +34,7 @@ data class Gesture(
             try {
                 var data = ""
                 val lines = rf.readLines()
-                if (lines.size <= 3) {
+                if (lines.size <= 10) {
                     for (l in lines) data += (l + "\n")
                 } else {
                     // Read the last 5 lines

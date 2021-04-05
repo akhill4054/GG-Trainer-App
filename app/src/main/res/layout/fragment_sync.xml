@@ -100,5 +100,26 @@
             app:layout_constraintEnd_toEndOf="@+id/lottieAnimationView3"
             app:layout_constraintStart_toStartOf="@+id/lottieAnimationView3"
             app:layout_constraintTop_toBottomOf="@+id/lottieAnimationView3" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/sync_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/margin_md"
+            android:paddingBottom="@dimen/margin_md"
+            android:text="@string/sync_all"
+            android:alpha="0.9"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_lg"
+            android:visibility="gone"
+            app:cornerRadius="20dp"
+            app:elevation="5dp"
+            app:isVisible="@{gesturesData.size() >= 2}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.9"
+            tools:visibility="visible" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

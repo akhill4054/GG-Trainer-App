@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
 
 class GesturesRepository private constructor(application: Application) {
 
@@ -62,7 +63,10 @@ class GesturesRepository private constructor(application: Application) {
     }
 
     suspend fun removeSyncedGestures() {
-        _gesturesDao.getSyncedGestures()
+        withContext(Dispatchers.IO) {
+            _gesturesDao.getSyncedGestures()
+            _syncedGestures.postValue(Collections.emptyList())
+        }
     }
 
     suspend fun insertGestures(gestures: List<Gesture>) {

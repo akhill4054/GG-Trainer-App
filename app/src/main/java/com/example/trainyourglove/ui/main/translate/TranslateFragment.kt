@@ -12,6 +12,7 @@ import androidx.lifecycle.asLiveData
 import com.example.trainyourglove.MAX_ACC_VALUE
 import com.example.trainyourglove.MIN_ACC_VALUE
 import com.example.trainyourglove.R
+import com.example.trainyourglove.connectivity.AppBluetooth
 import com.example.trainyourglove.databinding.FragmentTranslateBinding
 import java.util.*
 
@@ -53,7 +54,7 @@ class TranslateFragment : Fragment() {
             _binding.visualizer.updateValues(values)
         })
         _viewModel.translationState.observe(viewLifecycleOwner, { state ->
-            state!!.let {
+            state?.let {
                 _binding.translationState = state
 
                 if (state is TranslationViewModel.TranslationState.Translating) {
@@ -70,6 +71,12 @@ class TranslateFragment : Fragment() {
         })
         _viewModel.appBluetooth.connectionState.asLiveData().observe(viewLifecycleOwner, { state ->
             _binding.connectionState = state
+
+            if (state !is AppBluetooth.ConnectionState.Connected) {
+                // Reset translation text
+                _binding.translation.text = getString(R.string.tripe_dot)
+                _binding.translationState = null
+            }
         })
     }
 
